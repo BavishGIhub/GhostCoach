@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "493163075618",
+    "project_id": "ghost-coach-5231f",
+    "storage_bucket": "ghost-coach-5231f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:493163075618:android:24e41da3fa1e6ad0b7d27b",
+        "android_client_info": {
+          "package_name": "com.ghostcoach.ghost_coach_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "493163075618-pfp3nrkbinsjgnffpu7qma2ghnihfm5v.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ghostcoach.ghost_coach_app",
+            "certificate_hash": "a19ce5d46a853335c7e19443b1f6838e02b0b5b1"
+          }
+        },
+        {
+          "client_id": "493163075618-trlq0je05hp43sf6s2icd0044ure35up.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC7RZigOwMZjJy9OKJkT5duDHQc_G7NiXE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "493163075618-trlq0je05hp43sf6s2icd0044ure35up.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

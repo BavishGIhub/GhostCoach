@@ -1,0 +1,20 @@
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8B5CF6" />
+      <stop offset="100%" stop-color="#06B6D4" />
+    </linearGradient>
+  </defs>
+  
+  <g transform="translate(0, -60) scale(0.8)">
+    <path d="M156 120 C156 60, 200 20, 256 20 C312 20, 356 60, 356 120 V220 C420 220, 460 260, 460 320 C460 380, 420 420, 356 420 L156 420 C92 420, 52 380, 52 320 C52 260, 92 220, 156 220 Z M216 140 C216 120, 200 100, 186 100 C172 100, 156 120, 156 140 C156 160, 172 180, 186 180 C200 180, 216 160, 216 140 Z M356 140 C356 120, 340 100, 326 100 C312 100, 296 120, 296 140 C296 160, 312 180, 326 180 C340 180, 356 160, 356 140 Z" fill="url(#brandGrad)" />
+    <path d="M120 300 H140 V280 H160 V300 H180 V320 H160 V340 H140 V320 H120 Z" fill="#FFFFFF" opacity="0.9" />
+    <circle cx="360" cy="290" r="16" fill="#FFFFFF" opacity="0.9" />
+    <circle cx="390" cy="320" r="16" fill="#FFFFFF" opacity="0.9" />
+    <circle cx="330" cy="320" r="16" fill="#FFFFFF" opacity="0.9" />
+    <circle cx="360" cy="350" r="16" fill="#FFFFFF" opacity="0.9" />
+  </g>
+  
+  <text x="256" y="380" font-family="sans-serif" font-weight="bold" font-size="72" fill="#FFFFFF" text-anchor="middle" letter-spacing="4">GHOST</text>
+  <text x="256" y="460" font-family="sans-serif" font-weight="bold" font-size="72" fill="url(#brandGrad)" text-anchor="middle" letter-spacing="4">COACH</text>
+</svg>

@@ -1,0 +1,18 @@
+
+   info - 'Share' is 
+deprecated and shouldn't be 
+used. Use SharePlus instead 
+- lib\features\analysis\prese
+ntation\widgets\share_results
+_button.dart:28:15 - 
+deprecated_member_use
+   info - 'shareXFiles' is 
+deprecated and shouldn't be 
+used. Use 
+SharePlus.instance.share() 
+instead - lib\features\analys
+is\presentation\widgets\share
+_results_button.dart:28:21 - 
+deprecated_member_use
+
+

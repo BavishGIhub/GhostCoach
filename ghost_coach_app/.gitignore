@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+
+# Environment
+.env
+!.env.example
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Flutter
+ghost_coach_app/.dart_tool/
+ghost_coach_app/build/
+ghost_coach_app/.flutter-plugins
+ghost_coach_app/.flutter-plugins-dependencies
+ghost_coach_app/.packages
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Model weights cache
+.cache/
+torch_hub/
+
+# Temp uploads
+/tmp/ghost_coach/
+
+# Stitch exports
+stitch_designs/*.html
+
+# Agent skills (don't commit)
+.agent/

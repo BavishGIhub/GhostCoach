@@ -1,0 +1,33 @@
+
+warning - Unused import: 
+'dart:io' - lib\features\anal
+ysis\presentation\results_scr
+een.dart:1:8 - unused_import
+warning - Unused import: 'pac
+kage:video_player/video_playe
+r.dart' - lib\features\analys
+is\presentation\results_scree
+n.dart:6:8 - unused_import
+   info - 'Share' is 
+deprecated and shouldn't be 
+used. Use SharePlus instead 
+- lib\features\analysis\prese
+ntation\widgets\share_results
+_button.dart:28:15 - 
+deprecated_member_use
+   info - 'shareXFiles' is 
+deprecated and shouldn't be 
+used. Use 
+SharePlus.instance.share() 
+instead - lib\features\analys
+is\presentation\widgets\share
+_results_button.dart:28:21 - 
+deprecated_member_use
+warning - Unused import: '../
+../../../database/app_databas
+e.dart' - lib\features\home\p
+resentation\providers\home_pr
+oviders.dart:2:8 - 
+unused_import
+
+
