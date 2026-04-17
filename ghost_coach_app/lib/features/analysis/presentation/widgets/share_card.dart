@@ -3,6 +3,7 @@ import '../../../../domain/models/analysis_result.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/theme/glass_container.dart';
+import '../../../../shared/widgets/game_icon.dart';
 
 class ShareCard extends StatelessWidget {
   final AnalysisResult result;
@@ -88,9 +89,9 @@ class ShareCard extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(
-                        AppColors.gameEmoji(result.gameType),
-                        style: const TextStyle(fontSize: 48),
+                      GameIcon(
+                        gameType: result.gameType,
+                        size: 48,
                       ),
                       const SizedBox(width: 24),
                       Text(

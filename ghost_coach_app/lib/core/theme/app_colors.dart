@@ -82,16 +82,33 @@ class AppColors {
     }
   }
 
-  static String gameEmoji(String gameType) {
+  static Color gameColor(String gameType) {
     switch (gameType.toLowerCase()) {
       case 'fortnite':
-        return '🏗️';
+        return const Color(0xFF00D4FF);
       case 'valorant':
-        return '🎯';
+        return const Color(0xFFFF4655);
       case 'warzone':
-        return '🪖';
+        return const Color(0xFF8BC34A);
+      case 'soccer':
+        return const Color(0xFFFFFFFF);
       default:
-        return '🎮';
+        return const Color(0xFFAB47BC);
+    }
+  }
+
+  static String gameLabel(String gameType) {
+    switch (gameType.toLowerCase()) {
+      case 'fortnite':
+        return 'FORTNITE';
+      case 'valorant':
+        return 'VALORANT';
+      case 'warzone':
+        return 'WARZONE';
+      case 'soccer':
+        return 'SOCCER';
+      default:
+        return 'GENERAL';
     }
   }
 

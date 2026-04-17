@@ -54,7 +54,7 @@ class _BottomNavBar extends StatelessWidget {
           ),
           padding: EdgeInsets.only(bottom: bottomPadding),
           child: SizedBox(
-            height: 56,
+            height: 60,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
@@ -88,11 +88,19 @@ class _BottomNavBar extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeOutCubic,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
               decoration: BoxDecoration(
-                color: isSelected ? AppColors.primary.withValues(alpha: 0.1) : Colors.transparent,
-                borderRadius: BorderRadius.circular(12),
+                gradient: isSelected
+                    ? LinearGradient(
+                        colors: [
+                          AppColors.primary.withValues(alpha: 0.15),
+                          AppColors.secondary.withValues(alpha: 0.08),
+                        ],
+                      )
+                    : null,
+                borderRadius: BorderRadius.circular(14),
               ),
               child: Icon(
                 isSelected ? activeIcon : icon,
@@ -100,13 +108,14 @@ class _BottomNavBar extends StatelessWidget {
                 size: 22,
               ),
             ),
-            const SizedBox(height: 2),
+            const SizedBox(height: 3),
             Text(
               label,
               style: AppTextStyles.caption.copyWith(
                 color: color,
                 fontSize: 10,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.normal,
+                letterSpacing: isSelected ? 0.5 : 0,
               ),
             ),
           ],

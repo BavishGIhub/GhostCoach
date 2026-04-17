@@ -20,6 +20,7 @@ import 'widgets/radar_chart_widget.dart';
 import 'widgets/share_results_button.dart';
 import '../../../shared/widgets/achievement_popup.dart';
 import 'widgets/video_player_widget.dart';
+import '../../../shared/widgets/game_icon.dart';
 import '../../../core/providers.dart';
 
 class ResultsScreen extends ConsumerStatefulWidget {
@@ -248,14 +249,20 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                               ),
                             ),
                             SizedBox(height: 8),
-                            Text(
-                              '${AppColors.gameEmoji(result.gameType)} ${result.gameType.toUpperCase()} ANALYSIS',
-                              style: TextStyle(
-                                color: AppColors.textTertiary,
-                                fontSize: 10,
-                                letterSpacing: 2,
-                                fontWeight: FontWeight.bold,
-                              ),
+                            Row(
+                              children: [
+                                GameIcon(gameType: result.gameType, size: 16),
+                                SizedBox(width: 6),
+                                Text(
+                                  '${result.gameType.toUpperCase()} ANALYSIS',
+                                  style: TextStyle(
+                                    color: AppColors.textTertiary,
+                                    fontSize: 10,
+                                    letterSpacing: 2,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
                             SizedBox(height: 4),
                             Text(

@@ -16,6 +16,7 @@ import '../../gamification/presentation/widgets/xp_progress_bar.dart';
 import '../../gamification/presentation/widgets/streak_widget.dart';
 import '../../gamification/presentation/widgets/score_trend_chart.dart';
 import '../../gamification/application/gamification_providers.dart';
+import '../../../shared/widgets/game_icon.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -520,24 +521,37 @@ class _SessionItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scoreColor = AppColors.scoreColor(session.overallScore);
+    final gameColor = AppColors.gameColor(session.gameType ?? 'general');
 
     return GlassContainer(
       onTap: () => context.push('/analysis/results/${session.id}'),
-      padding: EdgeInsets.all(14),
+      padding: EdgeInsets.all(0),
       borderRadius: 14,
       child: Row(
         children: [
           Container(
+            width: 4,
+            height: 68,
+            decoration: BoxDecoration(
+              color: gameColor,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(14),
+                bottomLeft: Radius.circular(14),
+              ),
+            ),
+          ),
+          SizedBox(width: 10),
+          Container(
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.12),
+              color: gameColor.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Center(
-              child: Text(
-                AppColors.gameEmoji(session.gameType ?? 'general'),
-                style: TextStyle(fontSize: 20),
+              child: GameIcon(
+                gameType: session.gameType ?? 'general',
+                size: 22,
               ),
             ),
           ),
@@ -578,6 +592,7 @@ class _SessionItem extends StatelessWidget {
               ),
             ),
           ),
+          SizedBox(width: 14),
         ],
       ),
     );

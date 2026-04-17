@@ -9,6 +9,7 @@ import '../../../core/theme/glass_container.dart';
 import '../../../core/theme/animated_gradient_background.dart';
 import '../../../database/app_database.dart';
 import 'history_controller.dart';
+import '../../../shared/widgets/game_icon.dart';
 
 class HistoryScreen extends ConsumerWidget {
   const HistoryScreen({super.key});
@@ -236,15 +237,26 @@ class _FilterChips extends ConsumerWidget {
     final isActive = filter == active;
     return GestureDetector(
       onTap: () => ref.read(historyFilterProvider.notifier).set(filter),
-      child: Container(
+      child: AnimatedContainer(
+        duration: Duration(milliseconds: 200),
         padding: EdgeInsets.symmetric(horizontal: 18, vertical: 8),
         decoration: BoxDecoration(
           gradient: isActive ? AppColors.primaryGradient : null,
           color: isActive ? null : Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(20),
           border: isActive ? null : Border.all(color: AppColors.borderSubtle),
+          boxShadow: isActive
+              ? [BoxShadow(color: AppColors.primary.withValues(alpha: 0.2), blurRadius: 8)]
+              : null,
         ),
-        child: Text(label, style: AppTextStyles.brandSmall),
+        child: Text(
+          label,
+          style: AppTextStyles.sectionLabel.copyWith(
+            fontSize: 10,
+            color: isActive ? Colors.white : AppColors.textSecondary,
+            letterSpacing: 1.5,
+          ),
+        ),
       ),
     );
   }
@@ -258,27 +270,40 @@ class _HistoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scoreColor = AppColors.scoreColor(session.overallScore);
+    final gameColor = AppColors.gameColor(session.gameType ?? 'general');
     final dateStr = DateFormat(
       'MMM dd, yyyy • HH:mm',
     ).format(session.createdAt).toUpperCase();
 
     return GlassContainer(
       onTap: onTap,
-      padding: EdgeInsets.all(14),
+      padding: EdgeInsets.all(0),
       borderRadius: 12,
       child: Row(
         children: [
           Container(
+            width: 4,
+            height: 72,
+            decoration: BoxDecoration(
+              color: gameColor,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(12),
+                bottomLeft: Radius.circular(12),
+              ),
+            ),
+          ),
+          SizedBox(width: 10),
+          Container(
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.12),
+              color: gameColor.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(10),
             ),
             alignment: Alignment.center,
-            child: Text(
-              AppColors.gameEmoji(session.gameType ?? 'general'),
-              style: TextStyle(fontSize: 20),
+            child: GameIcon(
+              gameType: session.gameType ?? 'general',
+              size: 24,
             ),
           ),
           SizedBox(width: 14),
@@ -322,6 +347,7 @@ class _HistoryCard extends StatelessWidget {
               ),
             ],
           ),
+          SizedBox(width: 14),
         ],
       ),
     );

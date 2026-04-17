@@ -1,0 +1,22 @@
+<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+  <!-- Soccer ball design -->
+  <defs>
+    <linearGradient id="sc" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#E0E0E0"/>
+    </linearGradient>
+  </defs>
+  <circle cx="24" cy="24" r="20" fill="url(#sc)" stroke="#333" stroke-width="1.5"/>
+  <!-- Pentagon pattern -->
+  <polygon points="24,10 29,16 27,22 21,22 19,16" fill="#333"/>
+  <polygon points="13,18 19,16 21,22 17,27 11,24" fill="#333"/>
+  <polygon points="35,18 29,16 27,22 31,27 37,24" fill="#333"/>
+  <polygon points="17,27 21,34 15,38 10,32 11,24" fill="#333"/>
+  <polygon points="31,27 27,34 33,38 38,32 37,24" fill="#333"/>
+  <!-- Seam lines -->
+  <line x1="24" y1="10" x2="24" y2="4" stroke="#999" stroke-width="0.8"/>
+  <line x1="13" y1="18" x2="8" y2="13" stroke="#999" stroke-width="0.8"/>
+  <line x1="35" y1="18" x2="40" y2="13" stroke="#999" stroke-width="0.8"/>
+  <line x1="21" y1="34" x2="24" y2="42" stroke="#999" stroke-width="0.8"/>
+  <line x1="27" y1="34" x2="24" y2="42" stroke="#999" stroke-width="0.8"/>
+</svg>

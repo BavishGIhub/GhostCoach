@@ -8,10 +8,19 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/theme/glass_container.dart';
 import '../../../core/theme/animated_gradient_background.dart';
+import '../../../shared/widgets/game_icon.dart';
 import 'upload_controller.dart';
 
 class UploadScreen extends ConsumerWidget {
   const UploadScreen({super.key});
+
+  static const _games = [
+    ('fortnite', 'Fortnite'),
+    ('valorant', 'Valorant'),
+    ('warzone', 'Warzone'),
+    ('soccer', 'Soccer'),
+    ('general', 'General'),
+  ];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -185,56 +194,24 @@ class UploadScreen extends ConsumerWidget {
                     SizedBox(height: 24),
                   ],
 
-                  // Game Selector
+                  // Game Selector - Visual Cards
                   Text('SELECT GAME PROFILE', style: AppTextStyles.sectionLabel),
                   SizedBox(height: 12),
-                  GlassContainer(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 4,
-                    ),
-                    borderRadius: 12,
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        value: state.gameType,
-                        isExpanded: true,
-                        icon: Icon(
-                          Icons.expand_more,
-                          color: AppColors.textSecondary,
-                        ),
-                        dropdownColor: Color(0xFF1A1A24),
-                        style: TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: 14,
-                        ),
-                        items: [
-                          DropdownMenuItem(
-                            value: 'fortnite',
-                            child: Text('🏗️  Fortnite'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'valorant',
-                            child: Text('🎯  Valorant'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'warzone',
-                            child: Text('🪖  Warzone'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'soccer',
-                            child: Text('⚽  Soccer'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'general',
-                            child: Text('🎮  General'),
-                          ),
-                        ],
-                        onChanged: (val) {
-                          if (val != null) controller.setGameType(val);
-                        },
-                      ),
-                    ),
-                  ),
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: _games.map((game) {
+                      final isSelected = state.gameType == game.$1;
+                      final gameColor = AppColors.gameColor(game.$1);
+                      return _GameCard(
+                        gameType: game.$1,
+                        label: game.$2,
+                        isSelected: isSelected,
+                        gameColor: gameColor,
+                        onTap: () => controller.setGameType(game.$1),
+                      );
+                    }).toList(),
+                  ).animate().fadeIn(delay: 200.ms, duration: 400.ms),
 
                   // Soccer Position Selector (only shown when soccer is selected)
                   if (state.gameType == 'soccer') ...[
@@ -264,19 +241,19 @@ class UploadScreen extends ConsumerWidget {
                           items: [
                             DropdownMenuItem(
                               value: 'goalkeeper',
-                              child: Text('🧤 Goalkeeper'),
+                              child: Text('Goalkeeper'),
                             ),
                             DropdownMenuItem(
                               value: 'defender',
-                              child: Text('🛡️ Defender'),
+                              child: Text('Defender'),
                             ),
                             DropdownMenuItem(
                               value: 'midfielder',
-                              child: Text('⚙️ Midfielder'),
+                              child: Text('Midfielder'),
                             ),
                             DropdownMenuItem(
                               value: 'forward',
-                              child: Text('⚽ Forward'),
+                              child: Text('Forward'),
                             ),
                           ],
                           onChanged: (val) {
@@ -371,6 +348,66 @@ class UploadScreen extends ConsumerWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _GameCard extends StatelessWidget {
+  final String gameType;
+  final String label;
+  final bool isSelected;
+  final Color gameColor;
+  final VoidCallback onTap;
+
+  const _GameCard({
+    required this.gameType,
+    required this.label,
+    required this.isSelected,
+    required this.gameColor,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final width = (MediaQuery.of(context).size.width - 50) / 3;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: Duration(milliseconds: 200),
+        width: width,
+        padding: EdgeInsets.symmetric(vertical: 14),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? gameColor.withValues(alpha: 0.15)
+              : Colors.white.withValues(alpha: 0.04),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected
+                ? gameColor.withValues(alpha: 0.6)
+                : AppColors.borderSubtle,
+            width: isSelected ? 1.5 : 1,
+          ),
+          boxShadow: isSelected
+              ? [BoxShadow(color: gameColor.withValues(alpha: 0.15), blurRadius: 12)]
+              : null,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            GameIcon(gameType: gameType, size: 28),
+            SizedBox(height: 8),
+            Text(
+              label.toUpperCase(),
+              style: AppTextStyles.sectionLabel.copyWith(
+                fontSize: 8,
+                color: isSelected ? gameColor : AppColors.textSecondary,
+                letterSpacing: 1.5,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
