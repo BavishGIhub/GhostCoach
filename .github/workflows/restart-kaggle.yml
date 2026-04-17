@@ -2,9 +2,8 @@ name: Restart Kaggle Backend
 
 on:
   schedule:
-    # Runs daily at ~6:00 AM UTC (adjust to your timezone)
-    # Kaggle GPU sessions last ~9 hours, so this restarts before most usage windows
-    - cron: '3 6 * * *'
+    # Runs daily at 11:00 AM IST (5:30 AM UTC)
+    - cron: '30 5 * * *'
   workflow_dispatch:
     # Allows manual trigger from GitHub Actions UI
 
