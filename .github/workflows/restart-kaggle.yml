@@ -1,0 +1,51 @@
+name: Restart Kaggle Backend
+
+on:
+  schedule:
+    # Runs daily at ~6:00 AM UTC (adjust to your timezone)
+    # Kaggle GPU sessions last ~9 hours, so this restarts before most usage windows
+    - cron: '3 6 * * *'
+  workflow_dispatch:
+    # Allows manual trigger from GitHub Actions UI
+
+jobs:
+  restart-kaggle:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Kaggle CLI
+        run: pip install kaggle
+
+      - name: Configure Kaggle credentials
+        env:
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+        run: |
+          mkdir -p ~/.kaggle
+          echo "{\"username\":\"${KAGGLE_USERNAME}\",\"key\":\"${KAGGLE_KEY}\"}" > ~/.kaggle/kaggle.json
+          chmod 600 ~/.kaggle/kaggle.json
+
+      - name: Push and run Kaggle notebook
+        env:
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+        run: |
+          echo "Pushing notebook to Kaggle to trigger a new run..."
+          kaggle kernels push -p kaggle/
+          echo "Notebook pushed successfully. Kaggle will start a new GPU session."
+
+      - name: Verify kernel status
+        env:
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+        run: |
+          echo "Waiting 30s for Kaggle to register the run..."
+          sleep 30
+          kaggle kernels status bavish11/ghost-face || echo "Status check completed"
