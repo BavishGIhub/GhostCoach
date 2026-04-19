@@ -5,16 +5,68 @@ import '../../../../domain/models/analysis_result.dart';
 
 class RadarChartWidget extends StatelessWidget {
   final List<MovementPattern> patterns;
+  final String gameType;
 
-  const RadarChartWidget({super.key, required this.patterns});
+  const RadarChartWidget({
+    super.key,
+    required this.patterns,
+    this.gameType = 'general',
+  });
+
+  static const _soccerLabels = {
+    'movement_quality': 'MOV',
+    'spatial_awareness': 'SPA',
+    'ball_control': 'BALL',
+    'transitions': 'TRN',
+    'composure': 'CMP',
+    'decision_making': 'DEC',
+    'positioning': 'POS',
+    'off_ball_movement': 'OBM',
+    'pressing_intensity': 'PRS',
+  };
+
+  static const _fpsLabels = {
+    'consistency': 'CNS',
+    'reaction_time': 'RXN',
+    'positioning': 'POS',
+    'decision_making': 'DEC',
+    'aggression': 'AGG',
+    'composure': 'CMP',
+    'crosshair_control': 'AIM',
+    'movement_quality': 'MOV',
+    'utility_usage': 'UTL',
+  };
+
+  static const _warzoneLabels = {
+    'consistency': 'CNS',
+    'reaction_time': 'RXN',
+    'positioning': 'POS',
+    'decision_making': 'DEC',
+    'aggression': 'AGG',
+    'composure': 'CMP',
+    'looting_efficiency': 'LOT',
+    'rotation_timing': 'ROT',
+    'engagement_choice': 'ENG',
+  };
 
   String _getShortName(String name) {
-    if (name.toLowerCase().contains('consistency')) return 'CNS';
-    if (name.toLowerCase().contains('reaction')) return 'RXN';
-    if (name.toLowerCase().contains('positioning')) return 'POS';
-    if (name.toLowerCase().contains('decision')) return 'DEC';
-    if (name.toLowerCase().contains('aggression')) return 'AGG';
-    if (name.toLowerCase().contains('composure')) return 'CMP';
+    final key = name.toLowerCase().replaceAll(' ', '_');
+    final game = gameType.toLowerCase();
+
+    if (game == 'soccer') {
+      final match = _soccerLabels.entries.where((e) => key.contains(e.key));
+      if (match.isNotEmpty) return match.first.value;
+    } else if (game == 'valorant') {
+      final match = _fpsLabels.entries.where((e) => key.contains(e.key));
+      if (match.isNotEmpty) return match.first.value;
+    } else if (game == 'warzone') {
+      final match = _warzoneLabels.entries.where((e) => key.contains(e.key));
+      if (match.isNotEmpty) return match.first.value;
+    } else {
+      final match = _fpsLabels.entries.where((e) => key.contains(e.key));
+      if (match.isNotEmpty) return match.first.value;
+    }
+
     if (name.length <= 3) return name.toUpperCase();
     return name.substring(0, 3).toUpperCase();
   }

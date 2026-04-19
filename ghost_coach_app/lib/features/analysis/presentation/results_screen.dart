@@ -41,6 +41,8 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
   late ConfettiController _confettiController;
   VideoPlayerController? _videoPlayerController;
   late ScrollController _scrollController;
+  late ScrollController _storyboardScrollController;
+  int _activeStoryboardIndex = 0;
 
   @override
   void initState() {
@@ -49,6 +51,8 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
       duration: Duration(seconds: 3),
     );
     _scrollController = ScrollController();
+    _storyboardScrollController = ScrollController();
+    _storyboardScrollController.addListener(_onStoryboardScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final g = widget.gamificationResult;
       if (g != null && (g.leveledUp || g.newlyUnlocked.isNotEmpty)) {
@@ -65,7 +69,90 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
     _confettiController.dispose();
     _videoPlayerController?.dispose();
     _scrollController.dispose();
+    _storyboardScrollController.removeListener(_onStoryboardScroll);
+    _storyboardScrollController.dispose();
     super.dispose();
+  }
+
+  void _onStoryboardScroll() {
+    if (!_storyboardScrollController.hasClients) return;
+    const cardWidth = 332.0;
+    final index = (_storyboardScrollController.offset / cardWidth).round();
+    if (index != _activeStoryboardIndex) {
+      setState(() => _activeStoryboardIndex = index);
+    }
+  }
+
+  List<Widget> _buildGroupedTips(List<String> tips) {
+    final strengths = <String>[];
+    final improve = <String>[];
+    final meta = <String>[];
+    final general = <String>[];
+
+    for (final tip in tips) {
+      final l = tip.toLowerCase();
+      if (l.contains('meta tip') || (l.contains('meta') && l.contains('🎯'))) {
+        meta.add(tip);
+      } else if (l.contains('incredible') || l.contains('strength') || l.contains('greatest') || l.contains('excellent') || l.contains('impressive')) {
+        strengths.add(tip);
+      } else if (l.contains('improve') || l.contains('work on') || l.contains('develop') || l.contains('practice') || l.contains('drill') || l.contains('focus on')) {
+        improve.add(tip);
+      } else {
+        general.add(tip);
+      }
+    }
+
+    final widgets = <Widget>[];
+    var animIndex = 0;
+
+    void addGroup(String label, Color color, IconData icon, List<String> items) {
+      if (items.isEmpty) return;
+      widgets.add(
+        Padding(
+          padding: EdgeInsets.only(top: widgets.isEmpty ? 0 : 16, bottom: 8),
+          child: Row(
+            children: [
+              Container(
+                width: 4,
+                height: 16,
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              SizedBox(width: 8),
+              Icon(icon, size: 14, color: color),
+              SizedBox(width: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  color: color,
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.5,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+      for (final tip in items) {
+        widgets.add(
+          _CoachingTipCard(tip: tip, index: animIndex)
+              .animate(delay: Duration(milliseconds: 100 * animIndex))
+              .fadeIn(duration: 400.ms)
+              .slideX(begin: 0.05),
+        );
+        animIndex++;
+      }
+    }
+
+    addGroup('STRENGTHS', AppColors.success, Icons.star, strengths);
+    addGroup('IMPROVE', AppColors.warning, Icons.trending_up, improve);
+    addGroup('META INTEL', AppColors.accent, Icons.gamepad, meta);
+    addGroup('INSIGHTS', AppColors.secondary, Icons.lightbulb_outline, general);
+
+    return widgets;
   }
 
   void _showAchievementPopups(List<dynamic> achievements) async {
@@ -132,6 +219,18 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
 
   Widget _buildBody(BuildContext context, AnalysisResult result) {
     final gradeColor = AppColors.gradeColor(result.letterGrade);
+    final gameColor = AppColors.gameColor(result.gameType);
+    final previousAsync = ref.watch(previousAnalysisProvider((widget.analysisId, result.gameType)));
+    final previousPatternScores = <String, double>{};
+    double? previousOverallScore;
+    previousAsync.whenData((prev) {
+      if (prev != null) {
+        previousOverallScore = prev.features.overallScore;
+        for (final p in prev.features.movementPatterns) {
+          previousPatternScores[p.patternName] = p.score;
+        }
+      }
+    });
     final baseUrl = ref.watch(baseUrlProvider);
 
     // Parse the actual root URL cleanly
@@ -211,7 +310,7 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
 
             // ── HEADER CARD ──
             GlassContainer(
-              borderColor: gradeColor.withValues(alpha: 0.3),
+              borderColor: gameColor.withValues(alpha: 0.4),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -226,20 +325,20 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                               padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
-                                  colors: [AppColors.accent.withValues(alpha: 0.2), Colors.transparent],
+                                  colors: [gameColor.withValues(alpha: 0.2), Colors.transparent],
                                 ),
                                 borderRadius: BorderRadius.circular(6),
-                                border: Border.all(color: AppColors.accent.withValues(alpha: 0.3)),
+                                border: Border.all(color: gameColor.withValues(alpha: 0.3)),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(Icons.auto_awesome, size: 12, color: AppColors.accent),
+                                  Icon(Icons.auto_awesome, size: 12, color: gameColor),
                                   SizedBox(width: 4),
                                   Text(
                                     'GHOST COACH VISION AI',
                                     style: TextStyle(
-                                      color: AppColors.accent,
+                                      color: gameColor,
                                       fontSize: 9,
                                       fontWeight: FontWeight.bold,
                                       letterSpacing: 1.2,
@@ -251,7 +350,7 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                             SizedBox(height: 8),
                             Row(
                               children: [
-                                GameIcon(gameType: result.gameType, size: 16),
+                                GameIcon(gameType: result.gameType, size: 20),
                                 SizedBox(width: 6),
                                 Text(
                                   '${result.gameType.toUpperCase()} ANALYSIS',
@@ -272,7 +371,7 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                           ],
                         ),
                       ),
-                      _GradeBadge(grade: result.letterGrade, color: gradeColor),
+                      _GradeBadge(grade: result.letterGrade, color: gradeColor, score: result.features.overallScore),
                     ],
                   ),
                   if (result.sessionSummary.isNotEmpty) ...[
@@ -295,6 +394,28 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                       ),
                     ),
                   ],
+                  SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Icon(Icons.timer_outlined, size: 12, color: AppColors.textTertiary),
+                      SizedBox(width: 4),
+                      Text(
+                        'Analyzed in ${result.processingTimeSeconds.toStringAsFixed(1)}s',
+                        style: AppTextStyles.mono.copyWith(
+                          color: AppColors.textTertiary,
+                          fontSize: 10,
+                        ),
+                      ),
+                      if (previousOverallScore != null) ...[
+                        SizedBox(width: 12),
+                        _DeltaChip(
+                          current: result.features.overallScore,
+                          previous: previousOverallScore!,
+                          label: 'vs last',
+                        ),
+                      ],
+                    ],
+                  ),
                 ],
               ),
             ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.08),
@@ -346,6 +467,7 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                                 Expanded(
                                   child: RadarChartWidget(
                                     patterns: result.features.movementPatterns,
+                                    gameType: result.gameType,
                                   ),
                                 ),
                               ],
@@ -383,7 +505,10 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                           minWidth: 140,
                           maxWidth: (MediaQuery.of(context).size.width - 52) / 2,
                         ),
-                        child: _PatternCard(pattern: p),
+                        child: _PatternCard(
+                          pattern: p,
+                          previousScore: previousPatternScores[p.patternName],
+                        ),
                       ),
                     )
                     .toList(),
@@ -434,6 +559,7 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
               SizedBox(
                 height: 220,
                 child: ListView.separated(
+                  controller: _storyboardScrollController,
                   scrollDirection: Axis.horizontal,
                   itemCount: result.features.storyboardFrames.length,
                   separatorBuilder: (_, _) => SizedBox(width: 12),
@@ -451,12 +577,16 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(
                   result.features.storyboardFrames.length,
-                  (i) => Container(
-                    width: 6, height: 6,
+                  (i) => AnimatedContainer(
+                    duration: Duration(milliseconds: 200),
+                    width: i == _activeStoryboardIndex ? 16 : 6,
+                    height: 6,
                     margin: EdgeInsets.symmetric(horizontal: 3),
                     decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AppColors.accent.withValues(alpha: 0.5),
+                      borderRadius: BorderRadius.circular(3),
+                      color: i == _activeStoryboardIndex
+                          ? AppColors.accent
+                          : AppColors.accent.withValues(alpha: 0.3),
                     ),
                   ),
                 ),
@@ -487,14 +617,7 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                 color: AppColors.primary,
               ),
               SizedBox(height: 12),
-              ...List.generate(
-                result.recommendations.length,
-                (i) =>
-                    _CoachingTipCard(tip: result.recommendations[i], index: i)
-                        .animate(delay: Duration(milliseconds: 100 * i))
-                        .fadeIn(duration: 400.ms)
-                        .slideX(begin: 0.05),
-              ),
+              ..._buildGroupedTips(result.recommendations),
             ],
 
             SizedBox(height: 32),
@@ -636,23 +759,47 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
 class _GradeBadge extends StatelessWidget {
   final String grade;
   final Color color;
-  const _GradeBadge({required this.grade, required this.color});
+  final double score;
+  const _GradeBadge({required this.grade, required this.color, required this.score});
+
+  String _rankLabel(double s) {
+    if (s >= 90) return 'GHOST ELITE';
+    if (s >= 80) return 'DIAMOND';
+    if (s >= 70) return 'PLATINUM';
+    if (s >= 50) return 'GOLD';
+    return 'RECRUIT';
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 56,
-      height: 56,
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        shape: BoxShape.circle,
-        border: Border.all(color: color, width: 2),
-        boxShadow: [
-          BoxShadow(color: color.withValues(alpha: 0.25), blurRadius: 12),
-        ],
-      ),
-      alignment: Alignment.center,
-      child: Text(grade, style: AppTextStyles.brandSmall),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 56,
+          height: 56,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.12),
+            shape: BoxShape.circle,
+            border: Border.all(color: color, width: 2),
+            boxShadow: [
+              BoxShadow(color: color.withValues(alpha: 0.25), blurRadius: 12),
+            ],
+          ),
+          alignment: Alignment.center,
+          child: Text(grade, style: AppTextStyles.brandSmall),
+        ),
+        SizedBox(height: 6),
+        Text(
+          _rankLabel(score),
+          style: TextStyle(
+            color: color,
+            fontSize: 9,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.2,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -703,7 +850,8 @@ class _SectionHeader extends StatelessWidget {
 
 class _PatternCard extends StatelessWidget {
   final MovementPattern pattern;
-  const _PatternCard({required this.pattern});
+  final double? previousScore;
+  const _PatternCard({required this.pattern, this.previousScore});
 
   @override
   Widget build(BuildContext context) {
@@ -719,6 +867,14 @@ class _PatternCard extends StatelessWidget {
             children: [
               Text(pattern.icon, style: TextStyle(fontSize: 18)),
               Spacer(),
+              if (previousScore != null)
+                Padding(
+                  padding: EdgeInsets.only(right: 6),
+                  child: _DeltaChip(
+                    current: pattern.score,
+                    previous: previousScore!,
+                  ),
+                ),
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                 decoration: BoxDecoration(
@@ -747,6 +903,19 @@ class _PatternCard extends StatelessWidget {
               color: AppColors.textPrimary,
             ),
           ),
+          if (pattern.description.isNotEmpty) ...[
+            SizedBox(height: 4),
+            Text(
+              pattern.description,
+              style: TextStyle(
+                color: AppColors.textTertiary,
+                fontSize: 10,
+                height: 1.3,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
           SizedBox(height: 8),
           ClipRRect(
             borderRadius: BorderRadius.circular(3),
@@ -1184,6 +1353,48 @@ class _StoryboardCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _DeltaChip extends StatelessWidget {
+  final double current;
+  final double previous;
+  final String? label;
+  const _DeltaChip({required this.current, required this.previous, this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    final delta = current - previous;
+    if (delta.abs() < 0.5) return SizedBox.shrink();
+
+    final isPositive = delta > 0;
+    final color = isPositive ? AppColors.success : AppColors.error;
+    final icon = isPositive ? Icons.arrow_upward : Icons.arrow_downward;
+    final text = '${isPositive ? '+' : ''}${delta.toStringAsFixed(0)}${label != null ? ' $label' : ''}';
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 10, color: color),
+          SizedBox(width: 2),
+          Text(
+            text,
+            style: TextStyle(
+              color: color,
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
       ),
     );
   }

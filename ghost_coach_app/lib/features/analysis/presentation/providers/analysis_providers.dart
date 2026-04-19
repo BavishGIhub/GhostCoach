@@ -22,7 +22,7 @@ final analysisProvider = FutureProvider.autoDispose
       try {
         final db = ref.read(databaseProvider);
         final dbResult = await db.getAnalysisById(analysisId);
-        
+
         if (dbResult != null && dbResult.fullResultJson.isNotEmpty) {
           debugPrint('📦 Analysis found in DB: $analysisId');
           final json = jsonDecode(dbResult.fullResultJson) as Map<String, dynamic>;
@@ -34,4 +34,28 @@ final analysisProvider = FutureProvider.autoDispose
 
       // If not in cache or DB, throw error
       throw Exception('Analysis result not found. Please try uploading again.');
+    });
+
+final previousAnalysisProvider = FutureProvider.autoDispose
+    .family<AnalysisResult?, (String, String)>((ref, params) async {
+      final (currentId, gameType) = params;
+      try {
+        final db = ref.read(databaseProvider);
+        final allAnalyses = await db.getAllAnalyses();
+
+        final previous = allAnalyses
+            .where((a) => a.id != currentId && a.gameType == gameType)
+            .toList();
+
+        if (previous.isEmpty) return null;
+
+        final prev = previous.first;
+        if (prev.fullResultJson.isEmpty) return null;
+
+        final json = jsonDecode(prev.fullResultJson) as Map<String, dynamic>;
+        return AnalysisResult.fromJson(json);
+      } catch (e) {
+        debugPrint('⚠️ Previous analysis lookup failed: $e');
+        return null;
+      }
     });
