@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:drift/drift.dart' show Value;
 import '../../../domain/repositories/analysis_repository.dart';
+import '../../../domain/models/analysis_result.dart';
 import '../../../database/app_database.dart';
 import '../../history/presentation/history_controller.dart';
 import 'package:video_compress/video_compress.dart';
@@ -113,18 +114,48 @@ class UploadController extends Notifier<UploadState> {
       }
 
       // ── Step 2: Upload to Backend ──
-      // Get the FULL result directly from upload - no polling needed!
-      final result = await repository.uploadAndAnalyze(
-        fileToUpload,
-        state.gameType,
-        soccerPosition: state.gameType == 'soccer' ? state.soccerPosition : null,
-        onSendProgress: (sent, total) {
-          if (total > 0) {
-            // Map network upload to 30% -> 90% of overall progress. Final 10% is AI inference.
-            state = state.copyWith(uploadProgress: 0.3 + ((sent / total) * 0.6));
+      // Health check before uploading
+      final isServerUp = await repository.healthCheck();
+      if (!isServerUp) {
+        state = state.copyWith(
+          isUploading: false,
+          error: 'Analysis failed: Cannot reach the Ghost Coach server. The Kaggle backend may be offline — try again in a few minutes.',
+        );
+        return null;
+      }
+
+      // Upload with retry logic (up to 2 retries for connection drops)
+      const maxRetries = 2;
+      late final AnalysisResult result;
+      for (var attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+          result = await repository.uploadAndAnalyze(
+            fileToUpload,
+            state.gameType,
+            soccerPosition: state.gameType == 'soccer' ? state.soccerPosition : null,
+            onSendProgress: (sent, total) {
+              if (total > 0) {
+                state = state.copyWith(uploadProgress: 0.3 + ((sent / total) * 0.6));
+              }
+            },
+          );
+          break;
+        } catch (e) {
+          final errStr = e.toString();
+          final isRetryable = errStr.contains('Connection reset') ||
+              errStr.contains('reset by peer') ||
+              errStr.contains('Connection closed') ||
+              errStr.contains('SocketException');
+
+          if (isRetryable && attempt < maxRetries) {
+            debugPrint('🔄 Upload attempt ${attempt + 1} failed, retrying in ${(attempt + 1) * 3}s...');
+            state = state.copyWith(uploadProgress: 0.3);
+            await Future.delayed(Duration(seconds: (attempt + 1) * 3));
+            continue;
           }
-        },
-      );
+          rethrow;
+        }
+      }
 
       // Show complete
       state = state.copyWith(uploadProgress: 1.0);
@@ -166,14 +197,22 @@ class UploadController extends Notifier<UploadState> {
       return result.analysisId;
     } catch (e) {
       String errorMessage = e.toString().replaceAll('Exception:', '').trim();
-      
-      // If it's a Dio error, try to extract the specific server message
-      if (e is DioException && e.response?.data != null) {
-        final data = e.response!.data;
-        if (data is Map && data['detail'] != null) {
-          errorMessage = data['detail'].toString();
+
+      if (e is DioException) {
+        if (e.response?.data != null) {
+          final data = e.response!.data;
+          if (data is Map && data['detail'] != null) {
+            errorMessage = data['detail'].toString();
+          } else {
+            errorMessage = data.toString();
+          }
         } else {
-          errorMessage = data.toString();
+          final errStr = e.error?.toString() ?? e.message ?? '';
+          if (errStr.contains('Connection reset') || errStr.contains('reset by peer')) {
+            errorMessage = 'Server connection dropped after retries. The Kaggle backend may be offline — please try again later.';
+          } else if (errStr.contains('Connection refused')) {
+            errorMessage = 'Server is not running. Check that the Kaggle backend is active.';
+          }
         }
       }
 

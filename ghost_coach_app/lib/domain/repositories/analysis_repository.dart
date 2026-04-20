@@ -30,6 +30,21 @@ class AnalysisRepository {
 
   AnalysisRepository(this._dio);
 
+  Future<bool> healthCheck() async {
+    try {
+      final response = await _dio.get(
+        '/health',
+        options: Options(
+          receiveTimeout: const Duration(seconds: 10),
+          sendTimeout: const Duration(seconds: 5),
+        ),
+      );
+      return response.statusCode == 200;
+    } catch (_) {
+      return false;
+    }
+  }
+
   /// Uploads video and returns the FULL analysis result
   /// The server processes synchronously and returns everything in one response
   Future<AnalysisResult> uploadAndAnalyze(

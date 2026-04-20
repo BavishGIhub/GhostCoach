@@ -34,7 +34,14 @@ final dioProvider = Provider.autoDispose<Dio>((ref) {
           case DioExceptionType.connectionError:
             message = 'Cannot reach server. Check your URL in Settings.';
           default:
-            message = error.message ?? 'Unknown network error';
+            final errMsg = error.message ?? error.error?.toString() ?? '';
+            if (errMsg.contains('Connection reset') || errMsg.contains('reset by peer')) {
+              message = 'Server connection dropped. The backend may be restarting — please try again.';
+            } else if (errMsg.contains('Connection refused')) {
+              message = 'Server is not running. Check that the Kaggle backend is active.';
+            } else {
+              message = errMsg.isNotEmpty ? errMsg : 'Unknown network error';
+            }
         }
         debugPrint('🔴 Dio Error: $message');
         handler.next(error);
