@@ -2,8 +2,8 @@ name: Restart Kaggle Backend
 
 on:
   schedule:
-    # Runs daily at 1:00 PM IST (7:30 AM UTC)
-    - cron: '30 7 * * *'
+    # Runs daily at 6:00 PM IST (12:30 PM UTC)
+    - cron: '30 12 * * *'
   workflow_dispatch:
     # Allows manual trigger from GitHub Actions UI
 
@@ -31,20 +31,34 @@ jobs:
           echo "{\"username\":\"${KAGGLE_USERNAME}\",\"key\":\"${KAGGLE_KEY}\"}" > ~/.kaggle/kaggle.json
           chmod 600 ~/.kaggle/kaggle.json
 
+      - name: Cancel any existing Kaggle session
+        env:
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+        run: |
+          echo "Checking for existing running sessions..."
+          STATUS=$(kaggle kernels status bavish11/ghost-face 2>&1 || true)
+          echo "Current status: $STATUS"
+          if echo "$STATUS" | grep -qi "running"; then
+            echo "Found running session — pushing new version will cancel it."
+          else
+            echo "No active session found."
+          fi
+
       - name: Push and run Kaggle notebook
         env:
           KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
           KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
         run: |
-          echo "Pushing notebook to Kaggle to trigger a new run..."
+          echo "Pushing notebook to Kaggle (T4 GPU, 5h runtime)..."
           kaggle kernels push -p kaggle/
-          echo "Notebook pushed successfully. Kaggle will start a new GPU session."
+          echo "Notebook pushed. Kaggle will start a new T4 GPU session."
 
-      - name: Verify kernel status
+      - name: Verify kernel started
         env:
           KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
           KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
         run: |
-          echo "Waiting 30s for Kaggle to register the run..."
-          sleep 30
+          echo "Waiting 60s for Kaggle to register the run..."
+          sleep 60
           kaggle kernels status bavish11/ghost-face || echo "Status check completed"
