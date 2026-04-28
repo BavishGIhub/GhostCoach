@@ -2,8 +2,8 @@ name: Restart Kaggle Backend
 
 on:
   schedule:
-    # Runs daily at 6:00 PM IST (12:30 PM UTC)
-    - cron: '30 12 * * *'
+    # Runs daily at 5:00 PM IST (11:30 AM UTC)
+    - cron: '30 11 * * *'
   workflow_dispatch:
     # Allows manual trigger from GitHub Actions UI
 
@@ -45,20 +45,27 @@ jobs:
             echo "No active session found."
           fi
 
-      - name: Push and run Kaggle notebook
+      - name: Push and run Kaggle notebook (T4 x2)
         env:
           KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
           KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
         run: |
-          echo "Pushing notebook to Kaggle (T4 GPU, 5h runtime)..."
-          kaggle kernels push -p kaggle/
-          echo "Notebook pushed. Kaggle will start a new T4 GPU session."
+          echo "Pushing notebook to Kaggle (T4 x2 GPU, 5h runtime)..."
+          # Force new version by pushing with -r flag
+          kaggle kernels push -p kaggle/ -r
+          echo "Notebook pushed with new version. Kaggle will start a new T4 x2 GPU session."
 
       - name: Verify kernel started
         env:
           KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
           KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
         run: |
-          echo "Waiting 60s for Kaggle to register the run..."
-          sleep 60
-          kaggle kernels status bavish11/ghost-face || echo "Status check completed"
+          echo "Waiting 90s for Kaggle to register the run..."
+          sleep 90
+          STATUS=$(kaggle kernels status bavish11/ghost-face 2>&1 || true)
+          echo "Kernel status: $STATUS"
+          if echo "$STATUS" | grep -qi "running"; then
+            echo "Kernel is running successfully"
+          else
+            echo "Kernel status check completed"
+          fi
